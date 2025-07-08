@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    // Set up responsive canvas sizing
+    setupResponsiveCanvas(canvas);
+    
     // Initialize the game
     try {
         game = new Game(canvas);
@@ -31,10 +34,72 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Handle window resize
-window.addEventListener('resize', function() {
-    // Optional: Add responsive canvas resizing here if needed
-});
+// Setup responsive canvas sizing
+function setupResponsiveCanvas(canvas) {
+    const container = canvas.parentElement;
+    
+    function resizeCanvas() {
+        // Get viewport dimensions (available browser space)
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const isMobile = viewportWidth <= 768;
+        
+        let canvasWidth, canvasHeight;
+        
+        if (isMobile) {
+            // On mobile, use most of the viewport width but leave space for UI
+            const containerWidth = container.clientWidth - 20; // Account for padding
+            canvasWidth = Math.min(containerWidth, viewportWidth * 0.95);
+            canvasHeight = Math.min(canvasWidth * 0.75, viewportHeight * 0.5); // Leave space for UI elements
+        } else {
+            // On desktop, use a reasonable portion of the viewport
+            const maxWidth = Math.min(viewportWidth * 0.6, 700); // Smaller max width for desktop
+            const maxHeight = Math.min(viewportHeight * 0.6, 500); // Reasonable height
+            
+            // Maintain aspect ratio (4:3)
+            const aspectRatio = 4 / 3;
+            if (maxWidth / maxHeight > aspectRatio) {
+                canvasWidth = maxHeight * aspectRatio;
+                canvasHeight = maxHeight;
+            } else {
+                canvasWidth = maxWidth;
+                canvasHeight = maxWidth / aspectRatio;
+            }
+        }
+        
+        // Ensure minimum size for playability
+        if (canvasWidth < 320) {
+            canvasWidth = 320;
+            canvasHeight = 240;
+        }
+        
+        // Set canvas size
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
+        // Update CSS size to match
+        canvas.style.width = canvasWidth + 'px';
+        canvas.style.height = canvasHeight + 'px';
+        
+        console.log(`📐 Canvas resized to ${canvasWidth}x${canvasHeight} (Viewport: ${viewportWidth}x${viewportHeight}, Mobile: ${isMobile})`);
+        
+        // Restart the game if it exists to adjust to new dimensions
+        if (game) {
+            game.handleResize(canvasWidth, canvasHeight);
+        }
+    }
+    
+    // Initial resize
+    resizeCanvas();
+    
+    // Listen for window resize
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Listen for orientation change on mobile
+    window.addEventListener('orientationchange', () => {
+        setTimeout(resizeCanvas, 100); // Small delay to ensure orientation change is complete
+    });
+}
 
 // Handle visibility change (pause/resume game when tab changes)
 document.addEventListener('visibilitychange', function() {

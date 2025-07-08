@@ -34,31 +34,29 @@ class Game {
 
     // Setup event listeners for player input
     setupEventListeners() {
+        // Mouse click handler
         this.canvas.addEventListener('click', (e) => {
             const rect = this.canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const clickY = e.clientY - rect.top;
             const target = new Vector2D(clickX, clickY);
             
-            // Handle different game states
-            if (this.levelComplete) {
-                // Tap to go to next level
-                this.nextLevel();
-                return;
-            }
+            this.handleInput(target);
+        });
+
+        // Touch handler for mobile
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            const rect = this.canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+            const target = new Vector2D(touchX, touchY);
             
-            if (this.gameOver) {
-                // Tap to restart game
-                this.restart();
-                return;
-            }
-            
-            // Normal gameplay - shoot ball
-            if (this.ball.getIsMoving()) return;
-            this.shootBall(target);
+            this.handleInput(target);
         });
         
-        // Visual feedback on hover
+        // Visual feedback on hover (desktop only)
         this.canvas.addEventListener('mousemove', (e) => {
             if (this.gameOver || this.ball.getIsMoving()) return;
             
@@ -73,6 +71,31 @@ class Game {
         this.canvas.addEventListener('mouseleave', () => {
             this.mousePosition = null;
         });
+
+        // Prevent context menu on long press (mobile)
+        this.canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    }
+
+    // Handle input from both mouse and touch
+    handleInput(target) {
+        // Handle different game states
+        if (this.levelComplete) {
+            // Tap to go to next level
+            this.nextLevel();
+            return;
+        }
+        
+        if (this.gameOver) {
+            // Tap to restart game
+            this.restart();
+            return;
+        }
+        
+        // Normal gameplay - shoot ball
+        if (this.ball.getIsMoving()) return;
+        this.shootBall(target);
     }
 
     // Generate lines for the current level
@@ -431,5 +454,40 @@ class Game {
         targetCircle.hasGeneratedLine = true;
         
         return true;
+    }
+
+    // Handle canvas resize
+    handleResize(newWidth, newHeight) {
+        const oldWidth = this.width;
+        const oldHeight = this.height;
+        
+        this.width = newWidth;
+        this.height = newHeight;
+        
+        // Scale existing game objects to new dimensions
+        const scaleX = newWidth / oldWidth;
+        const scaleY = newHeight / oldHeight;
+        
+        // Scale ball position
+        if (this.ball) {
+            this.ball.position.x *= scaleX;
+            this.ball.position.y *= scaleY;
+        }
+        
+        // Scale lines
+        for (const line of this.lines) {
+            line.start.x *= scaleX;
+            line.start.y *= scaleY;
+            line.end.x *= scaleX;
+            line.end.y *= scaleY;
+        }
+        
+        // Scale circles
+        for (const circle of this.circles) {
+            circle.position.x *= scaleX;
+            circle.position.y *= scaleY;
+        }
+        
+        console.log(`🎮 Game objects scaled from ${oldWidth}x${oldHeight} to ${newWidth}x${newHeight}`);
     }
 }

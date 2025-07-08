@@ -2,32 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Taberinos - Line Breaking Ball Game</title>
     <style>
         body {
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Arial', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            box-sizing: border-box;
         }
 
         h1 {
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            text-align: center;
         }
 
         .game-container {
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            width: fit-content;
+            max-width: min(90vw, 750px);
+            box-sizing: border-box;
         }
 
         #gameCanvas {
@@ -35,6 +41,8 @@
             border-radius: 10px;
             cursor: crosshair;
             background: #f8f9fa;
+            display: block;
+            margin: 0 auto;
         }
 
         .ui-container {
@@ -42,24 +50,30 @@
             border-radius: 10px;
             padding: 15px;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: fit-content;
+            max-width: min(90vw, 750px);
+            box-sizing: border-box;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .stat {
             text-align: center;
+            min-width: 60px;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: clamp(10px, 2.5vw, 12px);
             color: #666;
             text-transform: uppercase;
             margin-bottom: 5px;
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: clamp(18px, 4vw, 24px);
             font-weight: bold;
             color: #333;
         }
@@ -68,11 +82,13 @@
             background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 15px;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: clamp(12px, 3vw, 16px);
             transition: transform 0.2s;
+            min-width: 100px;
+            white-space: nowrap;
         }
 
         button:hover {
@@ -84,13 +100,74 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .game-container {
+                padding: 10px;
+                margin-bottom: 10px;
+                border-radius: 10px;
+            }
+
+            .ui-container {
+                padding: 10px;
+                gap: 10px;
+                border-radius: 8px;
+            }
+
+            .stat {
+                min-width: 50px;
+            }
+
+            button {
+                padding: 8px 12px;
+                min-width: 80px;
+                font-size: 14px;
+            }
+
+            h1 {
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ui-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .stat {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: auto;
+            }
+
+            .stat-label {
+                margin-bottom: 0;
+                font-size: 12px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            button {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>🎯 Taberinos</h1>
     
     <div class="game-container">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas"></canvas>
     </div>
     
     <div class="ui-container">
