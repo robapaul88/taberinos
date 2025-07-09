@@ -1,15 +1,14 @@
 /**
  * Circle class representing intersection points between lines
- * These circles cause the ball to bounce instead of breaking lines
- * Special circles (dark blue-gray) can generate new lines when hit
+ * Red circles generate new lines when hit, green circles just bounce the ball
  */
 class Circle {
     constructor(position, radius = 6, isWhite = false, sourceLines = []) {
         this.position = position; // Vector2D
         this.radius = radius;
         this.isWhite = isWhite;
-        this.color = isWhite ? '#2c3e50' : '#e67e22'; // Dark blue-gray instead of white
-        this.glowColor = isWhite ? '#34495e' : '#f39c12';
+        this.color = isWhite ? '#e74c3c' : '#27ae60'; // Red for line generators, green for regular
+        this.glowColor = isWhite ? '#c0392b' : '#2ecc71';
         this.bounceEffect = 0; // For visual bounce effect
         this.hasGeneratedLine = false; // Track if this white circle has generated a line
         this.sourceLines = sourceLines; // Array of lines that created this intersection
@@ -19,16 +18,12 @@ class Circle {
     draw(ctx) {
         ctx.save();
         
-        // Check if any source lines are broken for visual feedback
-        const brokenSourceLines = this.sourceLines.filter(line => line.isBroken()).length;
-        const opacity = brokenSourceLines === 0 ? 1 : (brokenSourceLines === 1 ? 0.6 : 0.2);
-        
         // Draw glow effect
         const gradient = ctx.createRadialGradient(
             this.position.x, this.position.y, 0,
             this.position.x, this.position.y, this.radius * 2
         );
-        gradient.addColorStop(0, this.glowColor + Math.floor(opacity * 128).toString(16).padStart(2, '0'));
+        gradient.addColorStop(0, this.glowColor + '80'); // Fixed opacity
         gradient.addColorStop(1, this.glowColor + '00');
         
         ctx.fillStyle = gradient;
@@ -36,17 +31,16 @@ class Circle {
         ctx.arc(this.position.x, this.position.y, this.radius * 2, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw main circle with bounce effect and opacity
-        ctx.globalAlpha = opacity;
+        // Draw main circle with bounce effect
         const currentRadius = this.radius + this.bounceEffect;
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, currentRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw border for special circles (formerly "white")
+        // Draw border for special circles (line generators)
         if (this.isWhite) {
-            ctx.strokeStyle = '#1a252f';
+            ctx.strokeStyle = '#a93226'; // Darker red border
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(this.position.x, this.position.y, currentRadius, 0, Math.PI * 2);
@@ -54,7 +48,7 @@ class Circle {
         }
         
         // Draw inner highlight
-        ctx.fillStyle = this.isWhite ? '#ffffff60' : '#ffffff40';
+        ctx.fillStyle = this.isWhite ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.25)';
         ctx.beginPath();
         ctx.arc(
             this.position.x - currentRadius * 0.3, 

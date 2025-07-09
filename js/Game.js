@@ -552,8 +552,32 @@ class Game {
         
         if (availableWhiteCircles.length === 0) return false;
         
-        // Pick a random target circle
-        const targetCircle = availableWhiteCircles[Math.floor(Math.random() * availableWhiteCircles.length)];
+        // Try to find a target that won't intersect with the ball
+        let targetCircle = null;
+        let attempts = 0;
+        const maxAttempts = availableWhiteCircles.length;
+        
+        while (attempts < maxAttempts && !targetCircle) {
+            const candidateTarget = availableWhiteCircles[Math.floor(Math.random() * availableWhiteCircles.length)];
+            
+            // Check if the potential line would intersect with the ball
+            const tempLine = new Line(sourceCircle.position.copy(), candidateTarget.position.copy());
+            
+            // Check distance from ball to the potential line
+            if (!tempLine.intersectsWithPoint(this.ball.position, this.ball.radius + 5)) { // Add 5px safety margin
+                targetCircle = candidateTarget;
+            } else {
+                // Remove this candidate from the list and try another
+                const index = availableWhiteCircles.indexOf(candidateTarget);
+                availableWhiteCircles.splice(index, 1);
+            }
+            attempts++;
+        }
+        
+        if (!targetCircle) {
+            console.log('No suitable target found for line generation (would intersect ball)');
+            return false;
+        }
         
         // Create new line between the circles
         const newLine = new Line(sourceCircle.position.copy(), targetCircle.position.copy());
