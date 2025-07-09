@@ -103,35 +103,10 @@ class Circle {
         this.bounceEffect = Math.max(0, this.bounceEffect * 0.9);
     }
 
-    // Static method to find intersections between two lines
-    static findIntersection(line1, line2) {
-        const x1 = line1.start.x, y1 = line1.start.y;
-        const x2 = line1.end.x, y2 = line1.end.y;
-        const x3 = line2.start.x, y3 = line2.start.y;
-        const x4 = line2.end.x, y4 = line2.end.y;
-
-        const denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        
-        if (Math.abs(denominator) < 0.0001) {
-            return null; // Lines are parallel
-        }
-
-        const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denominator;
-        const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denominator;
-
-        // Check if intersection is within both line segments
-        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
-            return new Vector2D(
-                x1 + t * (x2 - x1),
-                y1 + t * (y2 - y1)
-            );
-        }
-
-        return null;
-    }
-
-    // Check if this circle should be removed (both source lines are broken)
+    // Check if this circle should be removed (all source lines are broken)
     shouldBeRemoved() {
+        // Circle should be removed only if ALL its source lines are broken
+        // This makes sense for endpoint circles - they exist as long as at least one line remains
         return this.sourceLines.length > 0 && this.sourceLines.every(line => line.isBroken());
     }
 }

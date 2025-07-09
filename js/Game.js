@@ -106,20 +106,61 @@ class Game {
         const baseLines = 6 + (this.level - 1) * 3; // Start with 6, add 3 per level
         const margin = 50;
         
-        // Generate random lines
-        for (let i = 0; i < baseLines; i++) {
-            const start = new Vector2D(
+        // Generate network of connected lines
+        // Start with some anchor points that will serve as connection nodes
+        const anchorPoints = [];
+        const numAnchors = Math.min(Math.floor(baseLines / 2), 8); // Reasonable number of connection points
+        
+        for (let i = 0; i < numAnchors; i++) {
+            anchorPoints.push(new Vector2D(
                 margin + Math.random() * (this.width - 2 * margin),
                 margin + Math.random() * (this.height - 2 * margin)
-            );
+            ));
+        }
+        
+        // Generate lines, some connecting to anchor points, others standalone
+        for (let i = 0; i < baseLines; i++) {
+            let start, end;
             
-            const length = 80 + Math.random() * 120;
-            const angle = Math.random() * Math.PI * 2;
-            
-            const end = new Vector2D(
-                start.x + Math.cos(angle) * length,
-                start.y + Math.sin(angle) * length
-            );
+            // 60% chance to connect to an anchor point for network structure
+            if (Math.random() < 0.6 && anchorPoints.length > 0) {
+                const useStartAnchor = Math.random() < 0.5;
+                const anchorIndex = Math.floor(Math.random() * anchorPoints.length);
+                
+                if (useStartAnchor) {
+                    start = anchorPoints[anchorIndex].copy();
+                    // Generate end point
+                    const length = 80 + Math.random() * 120;
+                    const angle = Math.random() * Math.PI * 2;
+                    end = new Vector2D(
+                        start.x + Math.cos(angle) * length,
+                        start.y + Math.sin(angle) * length
+                    );
+                } else {
+                    end = anchorPoints[anchorIndex].copy();
+                    // Generate start point
+                    const length = 80 + Math.random() * 120;
+                    const angle = Math.random() * Math.PI * 2;
+                    start = new Vector2D(
+                        end.x - Math.cos(angle) * length,
+                        end.y - Math.sin(angle) * length
+                    );
+                }
+            } else {
+                // Generate completely random line
+                start = new Vector2D(
+                    margin + Math.random() * (this.width - 2 * margin),
+                    margin + Math.random() * (this.height - 2 * margin)
+                );
+                
+                const length = 80 + Math.random() * 120;
+                const angle = Math.random() * Math.PI * 2;
+                
+                end = new Vector2D(
+                    start.x + Math.cos(angle) * length,
+                    start.y + Math.sin(angle) * length
+                );
+            }
             
             // Keep line within bounds
             if (end.x < margin) end.x = margin;
@@ -127,32 +168,83 @@ class Game {
             if (end.y < margin) end.y = margin;
             if (end.y > this.height - margin) end.y = this.height - margin;
             
+            if (start.x < margin) start.x = margin;
+            if (start.x > this.width - margin) start.x = this.width - margin;
+            if (start.y < margin) start.y = margin;
+            if (start.y > this.height - margin) start.y = this.height - margin;
+            
             this.lines.push(new Line(start, end));
         }
         
-        // Find intersections and create circles
+        // Find endpoint intersections and create circles
+        this.createEndpointCircles();
+    }
+
+    // Create circles at line endpoints where multiple lines meet
+    createEndpointCircles() {
+        const tolerance = 5; // Distance tolerance for considering endpoints as "same location"
+        const endpointGroups = new Map(); // Map to group endpoints by location
+        
+        // Collect all line endpoints
+        const allEndpoints = [];
         for (let i = 0; i < this.lines.length; i++) {
-            for (let j = i + 1; j < this.lines.length; j++) {
-                const intersection = Circle.findIntersection(this.lines[i], this.lines[j]);
-                if (intersection) {
-                    // Check if intersection is not too close to existing circles
-                    let tooClose = false;
-                    for (const circle of this.circles) {
-                        if (circle.position.distanceTo(intersection) < 30) {
-                            tooClose = true;
-                            break;
-                        }
-                    }
-                    if (!tooClose) {
-                        // 50% chance of being white
-                        const isWhite = Math.random() < 0.5;
-                        // Track which lines created this circle
-                        const sourceLines = [this.lines[i], this.lines[j]];
-                        this.circles.push(new Circle(intersection, 8, isWhite, sourceLines));
-                    }
+            const line = this.lines[i];
+            allEndpoints.push({ point: line.start, lineIndex: i, isStart: true });
+            allEndpoints.push({ point: line.end, lineIndex: i, isStart: false });
+        }
+        
+        // Group endpoints that are close to each other
+        for (const endpoint of allEndpoints) {
+            let foundGroup = false;
+            
+            // Check if this endpoint belongs to an existing group
+            for (const [groupKey, group] of endpointGroups) {
+                const groupCenter = group.center;
+                if (endpoint.point.distanceTo(groupCenter) <= tolerance) {
+                    // Add to existing group
+                    group.endpoints.push(endpoint);
+                    group.lines.add(endpoint.lineIndex);
+                    
+                    // Update group center (average of all points in group)
+                    const totalPoints = group.endpoints.length;
+                    group.center = new Vector2D(
+                        (groupCenter.x * (totalPoints - 1) + endpoint.point.x) / totalPoints,
+                        (groupCenter.y * (totalPoints - 1) + endpoint.point.y) / totalPoints
+                    );
+                    
+                    foundGroup = true;
+                    break;
                 }
             }
+            
+            // If no existing group found, create a new one
+            if (!foundGroup) {
+                const groupKey = `${Math.round(endpoint.point.x)}_${Math.round(endpoint.point.y)}`;
+                endpointGroups.set(groupKey, {
+                    center: endpoint.point.copy(),
+                    endpoints: [endpoint],
+                    lines: new Set([endpoint.lineIndex])
+                });
+            }
         }
+        
+        // Create circles for groups with 2 or more lines
+        for (const group of endpointGroups.values()) {
+            if (group.lines.size >= 2) {
+                // 50% chance of being white (line-generating)
+                const isWhite = Math.random() < 0.5;
+                
+                // Get the actual line objects that meet at this point
+                const sourceLines = Array.from(group.lines).map(index => this.lines[index]);
+                
+                // Create circle at the average position
+                this.circles.push(new Circle(group.center, 8, isWhite, sourceLines));
+                
+                console.log(`Created circle at (${Math.round(group.center.x)}, ${Math.round(group.center.y)}) connecting ${group.lines.size} lines`);
+            }
+        }
+        
+        console.log(`Generated ${this.circles.length} circles from ${endpointGroups.size} endpoint groups`);
     }
 
     // Place ball at random position
