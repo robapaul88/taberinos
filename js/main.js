@@ -176,8 +176,33 @@ window.gameDebug = {
                 circles: game.circles.length
             };
         }
+    },
+    
+    // Leaderboard debug commands
+    leaderboard: {
+        // Add test scores
+        addTestScores: () => {
+            leaderboard.saveScore(15, 85);
+            leaderboard.saveScore(12, 72);
+            leaderboard.saveScore(8, 48);
+            leaderboard.saveScore(10, 65);
+            leaderboard.saveScore(5, 30);
+            console.log('✅ Test scores added to leaderboard');
+        },
+        
+        // View leaderboard data
+        view: () => {
+            console.table(leaderboard.getScores());
+        },
+        
+        // Clear leaderboard
+        clear: () => {
+            leaderboard.clearScores();
+            console.log('🗑️ Leaderboard cleared');
+        }
     }
 };
 
 console.log('🛠️ Debug commands available: window.gameDebug');
+console.log('🏆 Leaderboard debug: window.gameDebug.leaderboard');
 console.log('⌨️ Keyboard shortcuts: R (restart), N (next level), ESC (stop ball)');

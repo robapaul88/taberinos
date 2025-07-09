@@ -161,6 +161,157 @@
                 max-width: 200px;
             }
         }
+
+        /* Leaderboard Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 0;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.7) translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-header h2 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .leaderboard-entry {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .leaderboard-entry.top-score {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .leaderboard-rank {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            min-width: 40px;
+        }
+
+        .leaderboard-info {
+            flex-grow: 1;
+            margin-left: 15px;
+            color: white;
+        }
+
+        .leaderboard-level {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .leaderboard-date {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .leaderboard-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .clear-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .empty-leaderboard {
+            text-align: center;
+            color: white;
+            opacity: 0.7;
+            padding: 40px 20px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -185,12 +336,32 @@
         </div>
         <button id="nextLevelBtn" onclick="game.nextLevel()" disabled>Next Level</button>
         <button id="restartBtn" onclick="game.restart()">Restart Game</button>
+        <button id="leaderboardBtn" onclick="toggleLeaderboard()">🏆 Leaderboard</button>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 Leaderboard</h2>
+                <button class="close-btn" onclick="toggleLeaderboard()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="leaderboardList">
+                    <!-- Leaderboard entries will be populated here -->
+                </div>
+                <div class="leaderboard-footer">
+                    <button onclick="clearLeaderboard()" class="clear-btn">Clear Scores</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="js/Vector2D.js"></script>
     <script src="js/Line.js"></script>
     <script src="js/Circle.js"></script>
     <script src="js/Ball.js"></script>
+    <script src="js/Leaderboard.js"></script>
     <script src="js/Game.js"></script>
     <script src="js/main.js"></script>
 </body>

@@ -371,8 +371,7 @@ class Game {
             this.updateUI();
         } else if (this.shotsRemaining <= 0) {
             // Game over
-            this.gameOver = true;
-            this.updateUI();
+            this.handleGameOver();
         }
     }
 
@@ -431,13 +430,28 @@ class Game {
         this.ctx.fillStyle = '#e74c3c';
         this.ctx.font = '48px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('Game Over!', this.width / 2, this.height / 2 - 40);
+        this.ctx.fillText('Game Over!', this.width / 2, this.height / 2 - 60);
         
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = '24px Arial';
-        this.ctx.fillText(`You reached level ${this.level}`, this.width / 2, this.height / 2 + 10);
-        this.ctx.font = '20px Arial';
-        this.ctx.fillText('Tap anywhere to restart', this.width / 2, this.height / 2 + 40);
+        this.ctx.fillText(`You reached level ${this.level}`, this.width / 2, this.height / 2 - 20);
+        
+        // Show total shots used
+        const totalShots = this.calculateTotalShotsUsed();
+        this.ctx.font = '18px Arial';
+        this.ctx.fillText(`Total shots used: ${totalShots}`, this.width / 2, this.height / 2 + 10);
+        
+        // Check if it's a high score
+        const isHighScore = leaderboard.isHighScore(this.level, totalShots);
+        if (isHighScore) {
+            this.ctx.fillStyle = '#f39c12';
+            this.ctx.font = '20px Arial';
+            this.ctx.fillText('🏆 New High Score!', this.width / 2, this.height / 2 + 40);
+        }
+        
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText('Tap anywhere to restart', this.width / 2, this.height / 2 + 70);
         
         this.ctx.restore();
     }
@@ -581,5 +595,44 @@ class Game {
         }
         
         console.log(`🎮 Game objects scaled from ${oldWidth}x${oldHeight} to ${newWidth}x${newHeight}`);
+    }
+
+    // Handle game over - save score to leaderboard
+    handleGameOver() {
+        this.gameOver = true;
+        
+        // Calculate total shots used
+        const totalShotsUsed = this.calculateTotalShotsUsed();
+        
+        // Save score to leaderboard
+        if (this.level > 1 || totalShotsUsed > 0) { // Only save if player actually played
+            const isHighScore = leaderboard.isHighScore(this.level, totalShotsUsed);
+            leaderboard.saveScore(this.level, totalShotsUsed);
+            
+            if (isHighScore) {
+                console.log(`🎉 New high score! Level ${this.level} with ${totalShotsUsed} total shots`);
+            }
+        }
+        
+        this.updateUI();
+    }
+
+    // Calculate total shots used across all levels
+    calculateTotalShotsUsed() {
+        // For current implementation, we'll estimate based on level progression
+        // Each level starts with maxShots, so total shots = sum of maxShots for each level completed
+        let totalShots = 0;
+        
+        for (let level = 1; level < this.level; level++) {
+            const levelMaxShots = 6 + (level - 1); // Formula from startLevel()
+            totalShots += levelMaxShots;
+        }
+        
+        // Add shots used in current level
+        const currentLevelMaxShots = 6 + (this.level - 1);
+        const currentLevelShotsUsed = currentLevelMaxShots - this.shotsRemaining;
+        totalShots += currentLevelShotsUsed;
+        
+        return totalShots;
     }
 }
