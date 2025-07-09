@@ -1,14 +1,15 @@
 /**
  * Circle class representing intersection points between lines
  * These circles cause the ball to bounce instead of breaking lines
+ * Special circles (dark blue-gray) can generate new lines when hit
  */
 class Circle {
-    constructor(position, radius = 8, isWhite = false, sourceLines = []) {
+    constructor(position, radius = 6, isWhite = false, sourceLines = []) {
         this.position = position; // Vector2D
         this.radius = radius;
         this.isWhite = isWhite;
-        this.color = isWhite ? '#ffffff' : '#e67e22';
-        this.glowColor = isWhite ? '#f8f9fa' : '#f39c12';
+        this.color = isWhite ? '#2c3e50' : '#e67e22'; // Dark blue-gray instead of white
+        this.glowColor = isWhite ? '#34495e' : '#f39c12';
         this.bounceEffect = 0; // For visual bounce effect
         this.hasGeneratedLine = false; // Track if this white circle has generated a line
         this.sourceLines = sourceLines; // Array of lines that created this intersection
@@ -43,9 +44,9 @@ class Circle {
         ctx.arc(this.position.x, this.position.y, currentRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw border for white circles
+        // Draw border for special circles (formerly "white")
         if (this.isWhite) {
-            ctx.strokeStyle = '#cccccc';
+            ctx.strokeStyle = '#1a252f';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(this.position.x, this.position.y, currentRadius, 0, Math.PI * 2);
@@ -53,7 +54,7 @@ class Circle {
         }
         
         // Draw inner highlight
-        ctx.fillStyle = this.isWhite ? '#ffffff80' : '#ffffff40';
+        ctx.fillStyle = this.isWhite ? '#ffffff60' : '#ffffff40';
         ctx.beginPath();
         ctx.arc(
             this.position.x - currentRadius * 0.3, 

@@ -312,6 +312,94 @@
             padding: 40px 20px;
             font-style: italic;
         }
+
+        /* Leaderboard Tabs */
+        .leaderboard-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 0;
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: bold;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            min-height: 200px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading-message {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .error-message {
+            text-align: center;
+            color: #e74c3c;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .clear-global-btn {
+            background: linear-gradient(45deg, #8e44ad, #9b59b6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+            margin-left: 10px;
+        }
+
+        .clear-global-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3);
+        }
+
+        .player-name-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .player-name-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -347,11 +435,23 @@
                 <button class="close-btn" onclick="toggleLeaderboard()">&times;</button>
             </div>
             <div class="modal-body">
-                <div id="leaderboardList">
-                    <!-- Leaderboard entries will be populated here -->
+                <div class="leaderboard-tabs">
+                    <button class="tab-btn active" onclick="switchTab('global')">🌍 Global</button>
+                    <button class="tab-btn" onclick="switchTab('local')">📱 Personal</button>
+                </div>
+                <div id="globalLeaderboard" class="tab-content active">
+                    <div id="globalLeaderboardList">
+                        <div class="loading-message">🔄 Loading global scores...</div>
+                    </div>
+                </div>
+                <div id="localLeaderboard" class="tab-content">
+                    <div id="localLeaderboardList">
+                        <!-- Local leaderboard entries will be populated here -->
+                    </div>
                 </div>
                 <div class="leaderboard-footer">
-                    <button onclick="clearLeaderboard()" class="clear-btn">Clear Scores</button>
+                    <button onclick="clearLeaderboard()" class="clear-btn">🗑️ Clear Personal Scores</button>
+                    <button onclick="clearGlobalLeaderboard()" class="clear-global-btn">⚠️ Clear Global Scores</button>
                 </div>
             </div>
         </div>
@@ -361,6 +461,11 @@
     <script src="js/Line.js"></script>
     <script src="js/Circle.js"></script>
     <script src="js/Ball.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <script src="js/Leaderboard.js"></script>
     <script src="js/Game.js"></script>
     <script src="js/main.js"></script>

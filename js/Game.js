@@ -173,7 +173,16 @@ class Game {
             if (start.y < margin) start.y = margin;
             if (start.y > this.height - margin) start.y = this.height - margin;
             
-            this.lines.push(new Line(start, end));
+            // Ensure minimum line length to prevent overlapping circles
+            const lineLength = start.distanceTo(end);
+            const minLineLength = 25; // Minimum distance to prevent circle overlap
+            
+            if (lineLength >= minLineLength) {
+                this.lines.push(new Line(start, end));
+            } else {
+                // If line is too short, try to extend it or skip it
+                i--; // Try again with a different random line
+            }
         }
         
         // Find endpoint intersections and create circles
@@ -182,7 +191,7 @@ class Game {
 
     // Create circles at line endpoints where multiple lines meet
     createEndpointCircles() {
-        const tolerance = 5; // Distance tolerance for considering endpoints as "same location"
+        const tolerance = 8; // Distance tolerance for considering endpoints as "same location"
         const endpointGroups = new Map(); // Map to group endpoints by location
         
         // Collect all line endpoints
@@ -238,7 +247,7 @@ class Game {
                 const sourceLines = Array.from(group.lines).map(index => this.lines[index]);
                 
                 // Create circle at the average position
-                this.circles.push(new Circle(group.center, 8, isWhite, sourceLines));
+                this.circles.push(new Circle(group.center, 6, isWhite, sourceLines));
                 
                 console.log(`Created circle at (${Math.round(group.center.x)}, ${Math.round(group.center.y)}) connecting ${group.lines.size} lines`);
             }
